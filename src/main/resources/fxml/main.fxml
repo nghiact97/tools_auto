@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.javarpa.controller.MainController"
+            stylesheets="@../css/dark-theme.css"
+            styleClass="root-pane"
+            prefWidth="920" prefHeight="680">
+
+    <!-- TOP HEADER -->
+    <top>
+        <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="12">
+            <Label text="🤖" styleClass="header-logo"/>
+            <VBox spacing="0">
+                <Label text="JavaRPA Tool" styleClass="header-title"/>
+                <Label fx:id="labelStatus" text="● Sẵn sàng" styleClass="status-idle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="labelLicense" text="⚠ Chưa kích hoạt" styleClass="license-warn"/>
+            <Label fx:id="labelTime" text="00:00:00" styleClass="header-clock"/>
+        </HBox>
+    </top>
+
+    <!-- CENTER CONTENT with TabPane -->
+    <center>
+        <TabPane fx:id="mainTabPane" styleClass="main-tabs" tabClosingPolicy="UNAVAILABLE">
+
+            <!-- TAB: Dashboard -->
+            <Tab text="📊 Dashboard" fx:id="tabDashboard">
+                <ScrollPane fitToWidth="true" styleClass="scroll-dark">
+                    <VBox spacing="16" styleClass="tab-content">
+
+                        <!-- Task Status Card -->
+                        <VBox styleClass="card">
+                            <Label text="Trạng thái Task" styleClass="card-title"/>
+                            <HBox spacing="16" alignment="CENTER_LEFT">
+                                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                    <HBox spacing="8" alignment="CENTER_LEFT">
+                                        <Label text="Task:" styleClass="label-muted"/>
+                                        <Label fx:id="labelTaskName" text="Không có task" styleClass="label-value"/>
+                                    </HBox>
+                                    <HBox spacing="8" alignment="CENTER_LEFT">
+                                        <Label text="Lặp lại:" styleClass="label-muted"/>
+                                        <Label fx:id="labelLoop" text="0 / 0" styleClass="label-value"/>
+                                    </HBox>
+                                    <HBox spacing="8" alignment="CENTER_LEFT">
+                                        <Label text="Thời gian:" styleClass="label-muted"/>
+                                        <Label fx:id="labelElapsed" text="00:00:00" styleClass="label-value"/>
+                                    </HBox>
+                                    <ProgressBar fx:id="progressTask" progress="0" styleClass="progress-rpa" maxWidth="Infinity"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Screen Monitor Card -->
+                        <VBox styleClass="card">
+                            <Label text="Screen Monitor" styleClass="card-title"/>
+                            <HBox spacing="16">
+                                <VBox spacing="8" HBox.hgrow="SOMETIMES" minWidth="200">
+                                    <Label text="Tọa độ chuột:" styleClass="label-muted"/>
+                                    <Label fx:id="labelMousePos" text="X: 0, Y: 0" styleClass="label-mono"/>
+                                    <Label text="Màu pixel:" styleClass="label-muted"/>
+                                    <HBox spacing="8" alignment="CENTER_LEFT">
+                                        <Pane fx:id="pixelColorBox" styleClass="pixel-box" prefWidth="20" prefHeight="20"/>
+                                        <Label fx:id="labelPixelColor" text="#000000" styleClass="label-mono"/>
+                                    </HBox>
+                                    <Label text="OCR Text:" styleClass="label-muted"/>
+                                    <TextArea fx:id="textOcrResult" editable="false" prefRowCount="3"
+                                              promptText="Chụp vùng để OCR..." styleClass="text-area-dark"/>
+                                    <Button fx:id="btnCapture" text="📸 Chụp &amp; OCR" styleClass="btn-secondary" onAction="#onCaptureOcr"/>
+                                </VBox>
+                                <VBox HBox.hgrow="ALWAYS" alignment="CENTER">
+                                    <ImageView fx:id="previewImage" fitWidth="300" fitHeight="180" preserveRatio="true"
+                                               styleClass="preview-frame"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Quick Actions Card -->
+                        <VBox styleClass="card">
+                            <Label text="Quick Actions" styleClass="card-title"/>
+                            <HBox spacing="10" alignment="CENTER">
+                                <Button fx:id="btnRun" text="▶ Chạy" styleClass="btn-run" onAction="#onRun" minWidth="100"/>
+                                <Button fx:id="btnPause" text="⏸ Tạm dừng" styleClass="btn-pause" onAction="#onPause" minWidth="110"/>
+                                <Button fx:id="btnStop" text="⏹ Dừng" styleClass="btn-stop" onAction="#onStop" minWidth="100"/>
+                                <Separator orientation="VERTICAL" styleClass="sep"/>
+                                <Button fx:id="btnRecord" text="🔴 Ghi Macro" styleClass="btn-record" onAction="#onRecord" minWidth="120"/>
+                                <Button fx:id="btnOpenScript" text="📂 Mở Script" styleClass="btn-secondary" onAction="#onOpenScript" minWidth="110"/>
+                            </HBox>
+                        </VBox>
+
+                        <!-- License Card -->
+                        <VBox styleClass="card">
+                            <Label text="🔑 Kích Hoạt Bản Quyền" styleClass="card-title"/>
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Label text="HWID:" styleClass="label-muted"/>
+                                <Label fx:id="labelHwid" text="Đang tải..." styleClass="label-mono hwid-label"/>
+                                <Button fx:id="btnCopyHwid" text="📋 Copy" styleClass="btn-mini" onAction="#onCopyHwid"/>
+                            </HBox>
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <TextField fx:id="fieldLicenseKey" promptText="Nhập license key tại đây..."
+                                           styleClass="text-field-dark" HBox.hgrow="ALWAYS"/>
+                                <Button fx:id="btnActivate" text="✅ Kích hoạt" styleClass="btn-activate" onAction="#onActivate"/>
+                            </HBox>
+                            <Label fx:id="labelLicenseInfo" text="" styleClass="license-info"/>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <!-- TAB: Macro -->
+            <Tab text="🎙️ Macro" fx:id="tabMacro">
+                <VBox spacing="12" styleClass="tab-content">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Button fx:id="btnMacroRecord" text="🔴 Bắt đầu ghi" styleClass="btn-record" onAction="#onMacroRecord" minWidth="140"/>
+                        <Button fx:id="btnMacroStop" text="⏹ Dừng ghi" styleClass="btn-stop" onAction="#onMacroStopRecord" minWidth="120"/>
+                        <Separator orientation="VERTICAL"/>
+                        <Button fx:id="btnMacroPlay" text="▶ Phát lại" styleClass="btn-run" onAction="#onMacroPlay" minWidth="110"/>
+                        <Button fx:id="btnMacroSave" text="💾 Lưu" styleClass="btn-secondary" onAction="#onMacroSave" minWidth="90"/>
+                        <Button fx:id="btnMacroLoad" text="📂 Mở" styleClass="btn-secondary" onAction="#onMacroLoad" minWidth="90"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <HBox spacing="6" alignment="CENTER">
+                            <Label text="Tốc độ:" styleClass="label-muted"/>
+                            <Slider fx:id="sliderSpeed" min="0.25" max="4.0" value="1.0" showTickLabels="true"
+                                    majorTickUnit="1.0" minWidth="140"/>
+                            <Label fx:id="labelSpeed" text="1.0x" styleClass="label-mono"/>
+                        </HBox>
+                    </HBox>
+
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Script:" styleClass="label-muted"/>
+                        <Label fx:id="labelMacroName" text="Chưa có macro" styleClass="label-value"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="labelMacroCount" text="0 hành động" styleClass="label-muted"/>
+                    </HBox>
+
+                    <ListView fx:id="listMacroActions" styleClass="list-view-dark" VBox.vgrow="ALWAYS"/>
+
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Lặp lại:" styleClass="label-muted"/>
+                        <Spinner fx:id="spinnerRepeat" min="1" max="9999" initialValue="1"
+                                 editable="true" prefWidth="90" styleClass="spinner-dark"/>
+                        <CheckBox fx:id="checkLoop" text="Vòng lặp vô tận" styleClass="check-dark"/>
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- TAB: Settings -->
+            <Tab text="⚙️ Cài đặt" fx:id="tabSettings">
+                <ScrollPane fitToWidth="true" styleClass="scroll-dark">
+                    <VBox spacing="16" styleClass="tab-content">
+
+                        <VBox styleClass="card">
+                            <Label text="Phím tắt toàn cục" styleClass="card-title"/>
+                            <GridPane hgap="16" vgap="10">
+                                <Label text="Chạy / Dừng:" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <ComboBox fx:id="comboHotkeyRun" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="combo-dark"/>
+                                <Label text="Ghi Macro:" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <ComboBox fx:id="comboHotkeyRecord" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="combo-dark"/>
+                                <Label text="Dừng khẩn cấp:" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <ComboBox fx:id="comboHotkeyEmergency" GridPane.columnIndex="1" GridPane.rowIndex="2" styleClass="combo-dark"/>
+                            </GridPane>
+                            <Button text="💾 Lưu phím tắt" styleClass="btn-secondary" onAction="#onSaveHotkeys"/>
+                        </VBox>
+
+                        <VBox styleClass="card">
+                            <Label text="Robot Settings" styleClass="card-title"/>
+                            <GridPane hgap="16" vgap="10">
+                                <Label text="Độ trễ giữa hành động (ms):" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                <Spinner fx:id="spinnerActionDelay" min="0" max="5000" initialValue="50"
+                                         editable="true" prefWidth="100" styleClass="spinner-dark"
+                                         GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                <Label text="OCR Language:" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                                <ComboBox fx:id="comboOcrLang" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="combo-dark"/>
+                                <Label text="Tessdata path:" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                                <HBox spacing="6" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <TextField fx:id="fieldTessPath" text="tessdata" styleClass="text-field-dark" prefWidth="200"/>
+                                    <Button text="📂" styleClass="btn-mini" onAction="#onBrowseTessdata"/>
+                                </HBox>
+                            </GridPane>
+                            <Button text="💾 Lưu cài đặt" styleClass="btn-secondary" onAction="#onSaveSettings"/>
+                        </VBox>
+
+                        <VBox styleClass="card">
+                            <Label text="Thông tin ứng dụng" styleClass="card-title"/>
+                            <Label text="JavaRPA Tool v1.0.0" styleClass="label-value"/>
+                            <Label text="Build on Java 21 + JavaFX 21" styleClass="label-muted"/>
+                            <Label text="© 2024 JavaRPA. Dành cho mục đích thí nghiệm / học tập." styleClass="label-muted"/>
+                        </VBox>
+
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+    <!-- BOTTOM STATUS BAR -->
+    <bottom>
+        <HBox styleClass="status-bar" alignment="CENTER_LEFT" spacing="20">
+            <Label text="F6: Chạy/Dừng" styleClass="hotkey-hint"/>
+            <Label text="F7: Ghi Macro" styleClass="hotkey-hint"/>
+            <Label text="F8: Dừng khẩn cấp" styleClass="hotkey-hint"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="labelLog" text="Sẵn sàng" styleClass="log-label"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>
