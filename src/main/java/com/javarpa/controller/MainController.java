@@ -4,6 +4,7 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
 import com.javarpa.core.GlobalHotkey;
 import com.javarpa.core.PixelDetector;
 import com.javarpa.core.ScreenCapture;
+import com.javarpa.game.GameBotController;
 import com.javarpa.license.LicenseManager;
 import com.javarpa.macro.MacroPlayer;
 import com.javarpa.macro.MacroRecorder;
@@ -19,6 +20,7 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
@@ -96,12 +98,37 @@ public class MainController implements Initializable {
     // === FXML Bindings: Status Bar ===
     @FXML private Label labelLog;
 
+    // === FXML Bindings: Game Bot Tab ===
+    @FXML private ComboBox<com.javarpa.game.GameProfile> comboProfiles;
+    @FXML private TextField fieldProfileName;
+    @FXML private TextField fieldGameName;
+    @FXML private TextField fieldExePath;
+    @FXML private TextField fieldUsername;
+    @FXML private PasswordField fieldPassword;
+    @FXML private TextField fieldServerName;
+    @FXML private TextField fieldUsernameX, fieldUsernameY;
+    @FXML private TextField fieldPasswordX, fieldPasswordY;
+    @FXML private TextField fieldLoginBtnX, fieldLoginBtnY;
+    @FXML private TextField fieldServerX, fieldServerY;
+    @FXML private TextField fieldEnterGameX, fieldEnterGameY;
+    @FXML private TextField fieldLoginDetectX, fieldLoginDetectY, fieldLoginDetectHex;
+    @FXML private TextField fieldServerDetectX, fieldServerDetectY, fieldServerDetectHex;
+    @FXML private Spinner<Integer> spinnerStepDelay;
+    @FXML private Spinner<Integer> spinnerWaitTimeout;
+    @FXML private Spinner<Integer> spinnerLaunchWait;
+    @FXML private CheckBox checkAutoReconnect;
+    @FXML private CheckBox checkRunAsAdmin;
+    @FXML private Button btnStartBot, btnStopBot, btnPauseBot;
+    @FXML private Label labelBotState;
+    @FXML private TextArea textBotLog;
+
     // === Services ===
     private final MacroRecorder macroRecorder = new MacroRecorder();
     private final MacroPlayer macroPlayer = new MacroPlayer();
     private final TaskEngine taskEngine = new TaskEngine();
     private MacroScript currentMacro = null;
     private boolean taskRunning = false;
+    private GameBotController gameBotController;
 
     // === Timers ===
     private Timer uiTimer;
@@ -115,8 +142,30 @@ public class MainController implements Initializable {
         setupHotkeys();
         setupMacroTab();
         setupSettingsTab();
+        setupGameBotTab();
         checkLicenseStatus();
         log("JavaRPA Tool đã khởi động.");
+    }
+
+    /** Wire tất cả FXML fields của Game Bot tab vào GameBotController. */
+    private void setupGameBotTab() {
+        gameBotController = new GameBotController();
+        gameBotController.injectFields(
+            comboProfiles, fieldProfileName, fieldGameName, fieldExePath,
+            fieldUsername, fieldPassword, fieldServerName,
+            fieldUsernameX, fieldUsernameY,
+            fieldPasswordX, fieldPasswordY,
+            fieldLoginBtnX, fieldLoginBtnY,
+            fieldServerX,   fieldServerY,
+            fieldEnterGameX, fieldEnterGameY,
+            fieldLoginDetectX, fieldLoginDetectY, fieldLoginDetectHex,
+            fieldServerDetectX, fieldServerDetectY, fieldServerDetectHex,
+            spinnerStepDelay, spinnerWaitTimeout, spinnerLaunchWait,
+            checkAutoReconnect, checkRunAsAdmin,
+            btnStartBot, btnStopBot, btnPauseBot,
+            labelBotState, textBotLog
+        );
+        gameBotController.initialize();
     }
 
     // =============================================
@@ -433,6 +482,28 @@ public class MainController implements Initializable {
             log("Tessdata path: " + dir.getAbsolutePath());
         }
     }
+
+    // =============================================
+    // GAME BOT ACTIONS (delegate to GameBotController)
+    // =============================================
+
+    @FXML private void onNewProfile()     { if (gameBotController != null) gameBotController.onNewProfile(); }
+    @FXML private void onSaveProfile()    { if (gameBotController != null) gameBotController.onSaveProfile(); }
+    @FXML private void onDeleteProfile()  { if (gameBotController != null) gameBotController.onDeleteProfile(); }
+    @FXML private void onBrowseExe()      { if (gameBotController != null) gameBotController.onBrowseExe(); }
+    @FXML private void onPickUsername()   { if (gameBotController != null) gameBotController.onPickUsername(); }
+    @FXML private void onPickPassword()   { if (gameBotController != null) gameBotController.onPickPassword(); }
+    @FXML private void onPickLoginBtn()   { if (gameBotController != null) gameBotController.onPickLoginBtn(); }
+    @FXML private void onPickServer()     { if (gameBotController != null) gameBotController.onPickServer(); }
+    @FXML private void onPickEnterGame()  { if (gameBotController != null) gameBotController.onPickEnterGame(); }
+    @FXML private void onPickLoginDetect(){ if (gameBotController != null) gameBotController.onPickLoginDetect(); }
+    @FXML private void onPickServerDetect(){ if (gameBotController != null) gameBotController.onPickServerDetect(); }
+    @FXML private void onStartBot()       { if (gameBotController != null) gameBotController.onStartBot(); }
+    @FXML private void onStopBot()        { if (gameBotController != null) gameBotController.onStopBot(); }
+    @FXML private void onPauseBot()       { if (gameBotController != null) gameBotController.onPauseBot(); }
+    @FXML private void onClearLog()       { if (gameBotController != null) gameBotController.onClearLog(); }
+
+
 
     // =============================================
     // HELPERS

@@ -53,4 +53,19 @@ public class CryptoUtil {
         key = Arrays.copyOf(key, 16); // 128-bit AES
         return new SecretKeySpec(key, ALGORITHM);
     }
+
+    // ===== Convenience overloads using internal fixed key (for GameBot profiles) =====
+
+    private static final String INTERNAL_KEY = "JavaRPA_GameBot_K";
+
+    /** Encrypt using internal key (for storing passwords in game profiles). */
+    public static String encrypt(String plaintext) {
+        return encrypt(plaintext, INTERNAL_KEY);
+    }
+
+    /** Decrypt using internal key (for reading passwords from game profiles). */
+    public static String decrypt(String ciphertext) {
+        String result = decrypt(ciphertext, INTERNAL_KEY);
+        return result != null ? result : ciphertext;
+    }
 }

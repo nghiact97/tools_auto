@@ -502,3 +502,47 @@
     -fx-border-color: #f85149;
     -fx-effect: dropshadow(gaussian, rgba(248, 81, 73, 0.6), 16, 0, 0, 0);
 }
+
+/* =========== GAME BOT UI =========== */
+
+/* Coord input fields — nhỏ gọn cho bảng tọa độ */
+.coord-field {
+    -fx-background-color: #0d1117;
+    -fx-border-color: #30363d;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-text-fill: #58a6ff;
+    -fx-font-family: "JetBrains Mono", "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-padding: 4 6 4 6;
+    -fx-alignment: CENTER;
+    -fx-border-width: 1;
+}
+
+.coord-field:focused {
+    -fx-border-color: #388bfd;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 253, 0.3), 4, 0, 0, 0);
+}
+
+/* Pick button — nổi bật màu cyberpunk xanh */
+.pick-btn {
+    -fx-background-color: linear-gradient(to bottom, #1f3a5a, #162d47);
+    -fx-text-fill: #58a6ff;
+    -fx-border-color: #388bfd;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 4 8 4 8;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.pick-btn:hover {
+    -fx-background-color: linear-gradient(to bottom, #388bfd, #1f6feb);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 253, 0.5), 8, 0, 0, 0);
+}
+
+.pick-btn:pressed {
+    -fx-background-color: #1158c7;
+}
+
