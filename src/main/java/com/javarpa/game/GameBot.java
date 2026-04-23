@@ -71,6 +71,11 @@ public class GameBot {
     private void run() {
         try {
             log("🤖 Bot bắt đầu — profile: " + profile.getProfileName());
+            log("📋 Tọa độ: PLAY(" + profile.getEnterGameX() + "," + profile.getEnterGameY()
+                + ") User(" + profile.getUsernameX() + "," + profile.getUsernameY()
+                + ") Pass(" + profile.getPasswordX() + "," + profile.getPasswordY()
+                + ") Login(" + profile.getLoginBtnX() + "," + profile.getLoginBtnY()
+                + ") Server(" + profile.getServerX() + "," + profile.getServerY() + ")");
 
             do {
                 if (!running) break;
@@ -79,24 +84,24 @@ public class GameBot {
                 stepLaunch();
                 if (!running) break;
 
-                // BƯỚC 2: Chờ màn hình login
+                // BƯỚC 2: Click nút Vào Game (PLAY) trên launcher
+                stepEnterGame();
+                if (!running) break;
+
+                // BƯỚC 3: Chờ màn hình login
                 stepWaitLogin();
                 if (!running) break;
 
-                // BƯỚC 3: Điền tài khoản + đăng nhập
+                // BƯỚC 4: Điền tài khoản + đăng nhập
                 stepLogin();
                 if (!running) break;
 
-                // BƯỚC 4: Chờ màn hình chọn server
+                // BƯỚC 5: Chờ màn hình chọn server
                 stepWaitServer();
                 if (!running) break;
 
-                // BƯỚC 5: Chọn server
+                // BƯỚC 6: Chọn server
                 stepSelectServer();
-                if (!running) break;
-
-                // BƯỚC 6: Vào game
-                stepEnterGame();
                 if (!running) break;
 
                 // BƯỚC 7: Giữ trạng thái RUNNING, polling disconnect
@@ -146,6 +151,13 @@ public class GameBot {
             throw new IOException("Exe file not found: " + exePath);
         }
 
+        // Kiểm tra process đã chạy chưa — nếu rồi thì bỏ qua để tránh dialog "already running"
+        String exeName = exeFile.getName();
+        if (isProcessRunning(exeName)) {
+            log("ℹ Process [" + exeName + "] đã đang chạy — bỏ qua bước mở exe.");
+            return;
+        }
+
         try {
             if (profile.isRunAsAdmin()) {
                 log("🚀 [Admin] Đang mở: " + exePath);
@@ -193,12 +205,13 @@ public class GameBot {
     }
 
 
-    /** Bước 2: Chờ màn hình đăng nhập load. */
+    /** Bước 3: Chờ màn hình đăng nhập load. */
     private void stepWaitLogin() throws InterruptedException {
         setState(State.WAITING_LOGIN);
         log("⏳ Chờ màn hình đăng nhập...");
 
         if (profile.getLoginDetectX() > 0 || profile.getLoginDetectY() > 0) {
+            // Chế độ pixel detect: chờ đến khi pixel đúng màu
             Color target = hexToColor(profile.getLoginDetectHex());
             boolean found = PixelDetector.waitForColor(
                 profile.getLoginDetectX(), profile.getLoginDetectY(),
@@ -210,8 +223,64 @@ public class GameBot {
                 log("✅ Màn hình đăng nhập đã xuất hiện.");
             }
         } else {
-            log("ℹ Không có pixel detect login — chờ " + (profile.getStepDelayMs() * 3) + "ms...");
-            sleep(profile.getStepDelayMs() * 3);
+            // Không có pixel detect → polling chờ game client xuất hiện
+            long timeoutMs = 60000; // tối đa 60 giây
+            long pollInterval = 2000; // kiểm tra mỗi 2 giây
+            long elapsed = 0;
+            boolean found = false;
+
+            log("🔍 Đang chờ game client xuất hiện (tối đa 60s)...");
+
+            while (running && elapsed < timeoutMs) {
+                // Kiểm tra xem cửa sổ game đã mở chưa bằng cách tìm process crossfire
+                if (isGameClientRunning()) {
+                    found = true;
+                    break;
+                }
+                sleep(pollInterval);
+                elapsed += pollInterval;
+                if (elapsed % 10000 == 0) {
+                    log("  ⏳ Đã chờ " + (elapsed / 1000) + "s...");
+                }
+            }
+
+            if (found) {
+                log("✅ Game client đã xuất hiện! Chờ thêm 5s để login screen load...");
+                sleep(5000); // chờ thêm 5s cho login screen render
+            } else {
+                log("⚠ Timeout 60s — không tìm thấy game client. Thử tiếp...");
+            }
+        }
+    }
+
+    /**
+     * Kiểm tra game client (Crossfire) đã chạy chưa.
+     * Tìm process "crossfire" hoặc "cf" trong tasklist.
+     */
+    private boolean isGameClientRunning() {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                "tasklist.exe", "/FI", "IMAGENAME eq crossfire.exe", "/NH"
+            );
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            String output = new String(p.getInputStream().readAllBytes()).trim();
+            p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+
+            if (output.toLowerCase().contains("crossfire")) return true;
+
+            // Thử tìm thêm tên khác (cf.exe, cfclient.exe...)
+            pb = new ProcessBuilder(
+                "tasklist.exe", "/FI", "IMAGENAME eq cf.exe", "/NH"
+            );
+            pb.redirectErrorStream(true);
+            p = pb.start();
+            output = new String(p.getInputStream().readAllBytes()).trim();
+            p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+
+            return output.toLowerCase().contains("cf.exe");
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -291,14 +360,18 @@ public class GameBot {
         }
     }
 
-    /** Bước 6: Click nút Vào Game. */
+    /** Bước 2: Click nút Vào Game (PLAY) trên launcher. */
     private void stepEnterGame() throws InterruptedException {
         setState(State.ENTERING_GAME);
         log("🎮 Click nút Vào Game...");
 
         if (profile.getEnterGameX() > 0) {
             sleep(profile.getStepDelayMs());
-            RobotActions.click(profile.getEnterGameX(), profile.getEnterGameY());
+            int x = profile.getEnterGameX();
+            int y = profile.getEnterGameY();
+            log("  → Click tọa độ (" + x + ", " + y + ")");
+            RobotActions.click(x, y);
+            log("  ✅ Đã click nút Vào Game.");
             sleep(profile.getStepDelayMs() * 2);
         } else {
             log("  ⚠ Chưa set tọa độ nút Vào Game — nhấn Enter...");
@@ -329,6 +402,28 @@ public class GameBot {
     // ================================================================
     //  UTILITIES
     // ================================================================
+
+    /**
+     * Kiểm tra process có đang chạy không (Windows).
+     * Dùng lệnh tasklist /FI để filter theo tên process.
+     */
+    private boolean isProcessRunning(String processName) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder(
+                "tasklist.exe", "/FI", "IMAGENAME eq " + processName, "/NH"
+            );
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            String output = new String(p.getInputStream().readAllBytes()).trim();
+            p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS);
+            // tasklist trả về dòng chứa tên process nếu nó đang chạy
+            return output.toLowerCase().contains(processName.toLowerCase());
+        } catch (Exception e) {
+            log("⚠ Không thể kiểm tra process: " + e.getMessage());
+            return false; // cho phép tiếp tục nếu check thất bại
+        }
+    }
+
 
     /**
      * Dùng clipboard để type text (hỗ trợ Unicode / tiếng Việt, ký tự đặc biệt).

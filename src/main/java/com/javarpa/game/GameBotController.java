@@ -130,6 +130,12 @@ public class GameBotController {
 
         updateBotUI(GameBot.State.IDLE);
         appendLog("🤖 Game Bot sẵn sàng.");
+
+        // Auto-select profile đầu tiên để form có dữ liệu sẵn
+        if (!profileList.isEmpty()) {
+            comboProfiles.setValue(profileList.get(0));
+            fillForm(profileList.get(0));
+        }
     }
 
     // ===== PROFILE ACTIONS (gọi từ MainController @FXML handlers) =====
@@ -146,10 +152,12 @@ public class GameBotController {
     public void onSaveProfile() {
         GameProfile p = getOrCreateSelected();
         readFormIntoProfile(p);
+        p.applyDefaults(); // fill tọa độ mặc định nếu = 0
         if (!profileList.contains(p)) profileList.add(p);
         saveProfiles();
         refreshProfileCombo();
         comboProfiles.setValue(p);
+        fillForm(p); // cập nhật lại form với giá trị đã apply defaults
         appendLog("💾 Đã lưu profile: " + p.getProfileName());
     }
 
@@ -367,7 +375,10 @@ public class GameBotController {
             String json = new String(Files.readAllBytes(PROFILES_FILE));
             Type listType = new com.google.gson.reflect.TypeToken<List<GameProfile>>(){}.getType();
             List<GameProfile> loaded = gson.fromJson(json, listType);
-            if (loaded != null) profileList.addAll(loaded);
+            if (loaded != null) {
+                for (GameProfile p : loaded) p.applyDefaults();
+                profileList.addAll(loaded);
+            }
         } catch (Exception e) {
             System.err.println("[GameBot] Load profiles failed: " + e.getMessage());
         }

@@ -18,11 +18,11 @@ public class GameProfile {
     private String serverName  = "1";         // tên / index server
 
     // ========== TOẠ ĐỘ UI ==========
-    private int usernameX  = 0, usernameY  = 0;
-    private int passwordX  = 0, passwordY  = 0;
-    private int loginBtnX  = 0, loginBtnY  = 0;
+    private int usernameX  = 1163, usernameY  = 735;
+    private int passwordX  = 1152, passwordY  = 768;
+    private int loginBtnX  = 1376, loginBtnY  = 764;
     private int serverX    = 0, serverY    = 0;
-    private int enterGameX = 0, enterGameY = 0;
+    private int enterGameX = 960, enterGameY = 205;
 
     // ========== PIXEL DETECT ==========
     // Pixel dùng để detect màn hình đăng nhập đã load xong
@@ -39,6 +39,23 @@ public class GameProfile {
     private long launchWaitMs   = 8000;   // chờ sau khi mở exe (ms) — đủ thời gian launcher load
     private boolean autoReconnect = false; // tự động re-login khi disconnect
     private boolean runAsAdmin    = false; // mở game bằng quyền Admin
+
+    // ========== DEFAULT VALUES (Crossfire) ==========
+    private static final int DEF_USERNAME_X = 1163, DEF_USERNAME_Y = 735;
+    private static final int DEF_PASSWORD_X = 1152, DEF_PASSWORD_Y = 768;
+    private static final int DEF_LOGINBTN_X = 1376, DEF_LOGINBTN_Y = 764;
+    private static final int DEF_ENTERGAME_X = 960, DEF_ENTERGAME_Y = 205;
+
+    /**
+     * Áp dụng tọa độ mặc định cho các field = 0.
+     * Gọi sau khi Gson deserialize từ JSON để fill giá trị thiếu.
+     */
+    public void applyDefaults() {
+        if (usernameX  == 0 && usernameY  == 0) { usernameX  = DEF_USERNAME_X;  usernameY  = DEF_USERNAME_Y; }
+        if (passwordX  == 0 && passwordY  == 0) { passwordX  = DEF_PASSWORD_X;  passwordY  = DEF_PASSWORD_Y; }
+        if (loginBtnX  == 0 && loginBtnY  == 0) { loginBtnX  = DEF_LOGINBTN_X;  loginBtnY  = DEF_LOGINBTN_Y; }
+        if (enterGameX == 0 && enterGameY == 0) { enterGameX = DEF_ENTERGAME_X; enterGameY = DEF_ENTERGAME_Y; }
+    }
 
     // ========== GETTERS / SETTERS ==========
 
