@@ -127,7 +127,9 @@ public class ServerSelectHandler implements ScreenHandler {
             return false;
         }
 
-        ctx.log("  → Click máy chủ [" + serverName + "] (" + coords[0] + ", " + coords[1] + ")");
+        ctx.log("  → Double-click máy chủ [" + serverName + "] (" + coords[0] + ", " + coords[1] + ")");
+        RobotActions.click(coords[0], coords[1]);
+        ctx.sleep(150);
         RobotActions.click(coords[0], coords[1]);
 
         // Chờ danh sách kênh hiển thị

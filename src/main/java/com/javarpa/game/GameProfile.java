@@ -51,9 +51,9 @@ public class GameProfile {
     private static final int DEF_LOGINBTN_X = 1376, DEF_LOGINBTN_Y = 764;
     private static final int DEF_ENTERGAME_X = 960, DEF_ENTERGAME_Y = 205;
 
-    // Nút "Chọn kênh" trên home screen
+    // Nút "Chọn kênh" trên home screen (row 2, bên trái menu)
     private int channelBtnX = 0, channelBtnY = 0;
-    private static final int DEF_CHANNELBTN_X = 640, DEF_CHANNELBTN_Y = 202;
+    private static final int DEF_CHANNELBTN_X = 640, DEF_CHANNELBTN_Y = 197;
 
     // Nút "Vào kênh" sau khi chọn kênh
     private int enterChannelBtnX = 0, enterChannelBtnY = 0;
@@ -78,6 +78,8 @@ public class GameProfile {
         if (loginBtnX   == 0 && loginBtnY   == 0) { loginBtnX   = DEF_LOGINBTN_X;   loginBtnY   = DEF_LOGINBTN_Y; }
         if (enterGameX  == 0 && enterGameY  == 0) { enterGameX  = DEF_ENTERGAME_X;  enterGameY  = DEF_ENTERGAME_Y; }
         if (channelBtnX == 0 && channelBtnY == 0) { channelBtnX = DEF_CHANNELBTN_X; channelBtnY = DEF_CHANNELBTN_Y; }
+        // Migration: sửa tọa độ cũ sai (680,168) → đúng (640,197)
+        if (channelBtnX == 680 && channelBtnY == 168) { channelBtnX = DEF_CHANNELBTN_X; channelBtnY = DEF_CHANNELBTN_Y; }
         if (enterChannelBtnX == 0 && enterChannelBtnY == 0) {
             enterChannelBtnX = DEF_ENTERCHANNELBTN_X;
             enterChannelBtnY = DEF_ENTERCHANNELBTN_Y;
@@ -93,22 +95,22 @@ public class GameProfile {
      * Layout Crossfire: bảng 2 cột, mỗi cột có danh sách máy chủ.
      *
      * <pre>
-     *  Cột trái (x≈900)     | Cột phải (x≈1130)
+     *  Cột trái (x≈900)     | Cột phải (x≈1210)
      *  ─────────────────────|───────────────────
-     *  Tân Binh   (y≈286)   | Tự do 1   (y≈286)
-     *  Tự do 2    (y≈315)   | Tự do 3   (y≈315)
-     *  Tự do 4    (y≈344)   | ...
+     *  Tân Binh   (y≈280)   | Tự do 1   (y≈280)
+     *  Tự do 2    (y≈308)   | Tự do 3   (y≈308)
+     *  Tự do 4    (y≈334)   | ...
      * </pre>
      */
     public int[] getServerCoords(String server) {
         if (server == null) return new int[]{0, 0};
         switch (server.trim()) {
-            case "Tân Binh":  return new int[]{900, 286};
-            case "Tự do 1":   return new int[]{1130, 286};
-            case "Tự do 2":   return new int[]{900, 315};
-            case "Tự do 3":   return new int[]{1130, 315};
-            case "Tự do 4":   return new int[]{900, 344};
-            default:           return new int[]{900, 286}; // mặc định Tân Binh
+            case "Tân Binh":  return new int[]{900, 280};
+            case "Tự do 1":   return new int[]{1210, 280};
+            case "Tự do 2":   return new int[]{900, 308};
+            case "Tự do 3":   return new int[]{1210, 308};
+            case "Tự do 4":   return new int[]{900, 334};
+            default:           return new int[]{900, 280}; // mặc định Tân Binh
         }
     }
 
