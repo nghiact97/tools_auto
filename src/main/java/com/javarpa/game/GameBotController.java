@@ -28,7 +28,8 @@ public class GameBotController {
     private TextField fieldProfileName, fieldGameName, fieldExePath;
     private TextField fieldUsername;
     private PasswordField fieldPassword;
-    private ComboBox<String> comboChannel;   // ComboBox chọn channel (thay TextField)
+    private ComboBox<String> comboChannel;          // ComboBox chọn máy chủ
+    private ComboBox<String> comboChannelNumber;     // ComboBox chọn kênh 1-6
     private TextField fieldUsernameX, fieldUsernameY;
     private TextField fieldPasswordX, fieldPasswordY;
     private TextField fieldLoginBtnX, fieldLoginBtnY;
@@ -53,10 +54,9 @@ public class GameBotController {
         System.getProperty("user.home"), ".javarpa", "game_profiles.json"
     );
 
-    // ===== CHANNEL LIST (Crossfire) =====
-    private static final String[] CHANNELS = {
-        "Tân Binh", "Tự do 1", "Tự do 2", "Tự do 3", "Tự do 4"
-    };
+    // ===== SERVER/CHANNEL LISTS (Crossfire) =====
+    // Lấy từ GameProfile.SERVER_NAMES
+    private static final String[] CHANNEL_NUMBERS = {"1", "2", "3", "4", "5", "6"};
 
     // ===== INJECTION =====
 
@@ -67,7 +67,8 @@ public class GameBotController {
     public void injectFields(
             ComboBox<GameProfile> comboProfiles,
             TextField fieldProfileName, TextField fieldGameName, TextField fieldExePath,
-            TextField fieldUsername, PasswordField fieldPassword, ComboBox<String> comboChannel,
+            TextField fieldUsername, PasswordField fieldPassword,
+            ComboBox<String> comboChannel, ComboBox<String> comboChannelNumber,
             TextField fieldUsernameX, TextField fieldUsernameY,
             TextField fieldPasswordX, TextField fieldPasswordY,
             TextField fieldLoginBtnX, TextField fieldLoginBtnY,
@@ -87,6 +88,7 @@ public class GameBotController {
         this.fieldUsername     = fieldUsername;
         this.fieldPassword     = fieldPassword;
         this.comboChannel      = comboChannel;
+        this.comboChannelNumber = comboChannelNumber;
         this.fieldUsernameX    = fieldUsernameX;
         this.fieldUsernameY    = fieldUsernameY;
         this.fieldPasswordX    = fieldPasswordX;
@@ -126,10 +128,16 @@ public class GameBotController {
             if (sel != null) fillForm(sel);
         });
 
-        // Setup channel ComboBox
+        // Setup server ComboBox (máy chủ)
         if (comboChannel != null) {
-            comboChannel.getItems().addAll(CHANNELS);
-            comboChannel.setValue(CHANNELS[0]); // mặc định "Tân Binh"
+            comboChannel.getItems().addAll(GameProfile.SERVER_NAMES);
+            comboChannel.setValue(GameProfile.SERVER_NAMES[0]);
+        }
+
+        // Setup channel number ComboBox (kênh 1-6)
+        if (comboChannelNumber != null) {
+            comboChannelNumber.getItems().addAll(CHANNEL_NUMBERS);
+            comboChannelNumber.setValue(CHANNEL_NUMBERS[0]); // mặc định kênh 1
         }
 
         spinnerStepDelay.setValueFactory(
@@ -323,9 +331,18 @@ public class GameBotController {
             p.setPasswordEnc(CryptoUtil.encrypt(rawPw));
         }
 
-        // Đọc channel từ ComboBox
+        // Đọc máy chủ từ ComboBox
         if (comboChannel != null && comboChannel.getValue() != null) {
             p.setServerName(comboChannel.getValue());
+        }
+
+        // Đọc kênh số từ ComboBox
+        if (comboChannelNumber != null && comboChannelNumber.getValue() != null) {
+            try {
+                p.setChannelNumber(Integer.parseInt(comboChannelNumber.getValue()));
+            } catch (NumberFormatException e) {
+                p.setChannelNumber(1);
+            }
         }
 
         p.setUsernameCoords(intOf(fieldUsernameX),  intOf(fieldUsernameY));
@@ -351,12 +368,17 @@ public class GameBotController {
         fieldUsername.setText(p.getUsername());
         fieldPassword.setText(""); // không hiện password đã encrypt
 
-        // Set channel ComboBox
+        // Set server ComboBox
         if (comboChannel != null) {
             String serverName = p.getServerName();
             if (serverName != null && !serverName.isEmpty()) {
                 comboChannel.setValue(serverName);
             }
+        }
+
+        // Set channel number ComboBox
+        if (comboChannelNumber != null) {
+            comboChannelNumber.setValue(String.valueOf(p.getChannelNumber()));
         }
 
         fieldUsernameX.setText(str(p.getUsernameX()));

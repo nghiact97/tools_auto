@@ -7,12 +7,26 @@ import com.javarpa.game.GameProfile;
 import java.awt.Color;
 
 /**
- * Handler cho bước 4: Chờ + Chọn server/channel.
+ * Handler cho bước 4: Chọn máy chủ + Chọn kênh (2 bước).
  *
- * <p>detect(): Pixel detect màn hình chọn server đã xuất hiện.
- * <br>handle(): Click tọa độ server/channel muốn chọn.</p>
+ * <p>Luồng xử lý Crossfire:</p>
+ * <ol>
+ *   <li>Chờ home screen (sảnh chính) load xong</li>
+ *   <li>Click nút "Chọn kênh" trên thanh menu</li>
+ *   <li>Chờ bảng máy chủ hiển thị</li>
+ *   <li>Click máy chủ mong muốn (Tân Binh, Tự do 1, ...)</li>
+ *   <li>Chờ danh sách 6 kênh hiển thị</li>
+ *   <li>Click kênh mong muốn (kênh 1-6)</li>
+ *   <li>Click nút "Vào kênh"</li>
+ * </ol>
  */
 public class ServerSelectHandler implements ScreenHandler {
+
+    /** Thời gian chờ home screen load sau login (ms). */
+    private static final long HOME_SCREEN_WAIT_MS = 5000;
+
+    /** Thời gian chờ bảng server/channel hiện ra (ms). */
+    private static final long LIST_WAIT_MS = 1500;
 
     @Override
     public String getName() {
@@ -20,13 +34,12 @@ public class ServerSelectHandler implements ScreenHandler {
     }
 
     /**
-     * Chờ màn hình chọn server xuất hiện.
-     * Sử dụng pixel detect nếu cấu hình, hoặc chờ cố định.
+     * Chờ home screen (sảnh chính) xuất hiện sau khi đăng nhập.
      */
     @Override
     public boolean detect(BotContext ctx) throws InterruptedException {
         GameProfile profile = ctx.getProfile();
-        ctx.log("⏳ Chờ màn hình chọn server...");
+        ctx.log("⏳ Chờ sảnh chính (home screen) load...");
 
         if (profile.getServerDetectX() > 0 || profile.getServerDetectY() > 0) {
             Color target = hexToColor(profile.getServerDetectHex());
@@ -35,59 +48,129 @@ public class ServerSelectHandler implements ScreenHandler {
                 target, 30, profile.getWaitTimeoutMs()
             );
             if (found) {
-                ctx.log("✅ Màn hình chọn server đã xuất hiện.");
+                ctx.log("✅ Sảnh chính đã xuất hiện.");
             } else {
-                ctx.log("⚠ Timeout chờ server screen — thử tiếp...");
+                ctx.log("⚠ Timeout chờ home screen — thử tiếp...");
             }
         } else {
-            // Không có pixel detect → chờ cố định
-            ctx.sleep(profile.getStepDelayMs() * 3);
+            ctx.log("  ⏳ Chờ " + HOME_SCREEN_WAIT_MS + "ms để sảnh chính load...");
+            ctx.sleep(HOME_SCREEN_WAIT_MS);
+            ctx.log("  ✅ Đã chờ xong.");
         }
 
         return true;
     }
 
-    /**
-     * Chọn server/channel theo thứ tự:
-     * 1. Click nút "Chọn kênh" trên home screen (nếu cấu hình)
-     * 2. Click tọa độ channel cụ thể (dựa theo serverName)
-     * 3. Hoặc click tọa độ server trực tiếp (nếu serverX/Y có giá trị)
-     */
     @Override
     public ScreenResult handle(BotContext ctx) throws InterruptedException {
         GameProfile profile = ctx.getProfile();
         String serverName = profile.getServerName();
-        ctx.log("🖥 Chọn server: " + serverName);
+        int channelNumber = profile.getChannelNumber();
 
-        // Bước 1: Click nút "Chọn kênh" (nếu cần vào menu channel)
-        if (profile.getChannelBtnX() > 0 && profile.getChannelBtnY() > 0) {
-            ctx.log("  → Click nút Chọn kênh (" + profile.getChannelBtnX()
-                + ", " + profile.getChannelBtnY() + ")");
-            RobotActions.click(profile.getChannelBtnX(), profile.getChannelBtnY());
-            ctx.sleep(profile.getStepDelayMs());
+        ctx.log("🖥 Mục tiêu: máy chủ [" + serverName + "] → kênh " + channelNumber);
+
+        // ── Bước 1: Click nút "Chọn kênh" trên home screen ──
+        if (!clickChooseChannelTab(ctx)) {
+            return ScreenResult.SKIP;
         }
 
-        // Bước 2: Chọn channel theo tên
-        int[] channelCoords = profile.getChannelCoords(serverName);
-        if (channelCoords[0] > 0 && channelCoords[1] > 0) {
-            ctx.log("  → Click channel '" + serverName + "' (" + channelCoords[0]
-                + ", " + channelCoords[1] + ")");
-            RobotActions.click(channelCoords[0], channelCoords[1]);
-            ctx.sleep(profile.getStepDelayMs());
-            return ScreenResult.SUCCESS;
+        // ── Bước 2: Click chọn máy chủ từ bảng ──
+        if (!clickServer(ctx, serverName)) {
+            return ScreenResult.SKIP;
         }
 
-        // Bước 3: Fallback — click tọa độ server trực tiếp
-        if (profile.getServerX() > 0 && profile.getServerY() > 0) {
-            ctx.log("  → Click server (" + profile.getServerX()
-                + ", " + profile.getServerY() + ")");
-            RobotActions.click(profile.getServerX(), profile.getServerY());
-            ctx.sleep(profile.getStepDelayMs());
-            return ScreenResult.SUCCESS;
+        // ── Bước 3: Click chọn kênh 1-6 ──
+        if (!clickChannel(ctx, channelNumber)) {
+            return ScreenResult.SKIP;
         }
 
-        ctx.log("  ⚠ Chưa set tọa độ server — bỏ qua.");
-        return ScreenResult.SKIP;
+        // ── Bước 4: Click nút "Vào kênh" ──
+        clickEnterChannel(ctx);
+
+        ctx.log("✅ Đã chọn máy chủ [" + serverName + "] kênh " + channelNumber + ".");
+        return ScreenResult.SUCCESS;
+    }
+
+    // ================================================================
+    //  BƯỚC 1: Click nút "Chọn kênh"
+    // ================================================================
+
+    private boolean clickChooseChannelTab(BotContext ctx) throws InterruptedException {
+        GameProfile profile = ctx.getProfile();
+        int x = profile.getChannelBtnX();
+        int y = profile.getChannelBtnY();
+
+        if (x <= 0 || y <= 0) {
+            ctx.log("  ⚠ Chưa set tọa độ nút [Chọn kênh] — bỏ qua.");
+            return false;
+        }
+
+        ctx.log("  → Click nút [Chọn kênh] (" + x + ", " + y + ")");
+        RobotActions.click(x, y);
+
+        // Chờ bảng máy chủ hiển thị
+        ctx.log("  ⏳ Chờ bảng máy chủ hiển thị...");
+        ctx.sleep(LIST_WAIT_MS);
+        return true;
+    }
+
+    // ================================================================
+    //  BƯỚC 2: Click máy chủ trong bảng
+    // ================================================================
+
+    private boolean clickServer(BotContext ctx, String serverName) throws InterruptedException {
+        GameProfile profile = ctx.getProfile();
+        int[] coords = profile.getServerCoords(serverName);
+
+        if (coords[0] <= 0 || coords[1] <= 0) {
+            ctx.log("  ⚠ Không tìm được tọa độ máy chủ [" + serverName + "].");
+            return false;
+        }
+
+        ctx.log("  → Click máy chủ [" + serverName + "] (" + coords[0] + ", " + coords[1] + ")");
+        RobotActions.click(coords[0], coords[1]);
+
+        // Chờ danh sách kênh hiển thị
+        ctx.log("  ⏳ Chờ danh sách kênh hiển thị...");
+        ctx.sleep(LIST_WAIT_MS);
+        return true;
+    }
+
+    // ================================================================
+    //  BƯỚC 3: Click kênh 1-6
+    // ================================================================
+
+    private boolean clickChannel(BotContext ctx, int channelNumber) throws InterruptedException {
+        GameProfile profile = ctx.getProfile();
+        int[] coords = profile.getChannelRowCoords(channelNumber);
+
+        if (coords[0] <= 0 || coords[1] <= 0) {
+            ctx.log("  ⚠ Không tìm được tọa độ kênh " + channelNumber + ".");
+            return false;
+        }
+
+        ctx.log("  → Click kênh " + channelNumber + " (" + coords[0] + ", " + coords[1] + ")");
+        RobotActions.click(coords[0], coords[1]);
+        ctx.sleep(profile.getStepDelayMs());
+        return true;
+    }
+
+    // ================================================================
+    //  BƯỚC 4: Click nút "Vào kênh"
+    // ================================================================
+
+    private void clickEnterChannel(BotContext ctx) throws InterruptedException {
+        GameProfile profile = ctx.getProfile();
+        int x = profile.getEnterChannelBtnX();
+        int y = profile.getEnterChannelBtnY();
+
+        if (x > 0 && y > 0) {
+            ctx.log("  → Click nút [Vào kênh] (" + x + ", " + y + ")");
+            RobotActions.click(x, y);
+            ctx.sleep(profile.getStepDelayMs());
+        } else {
+            ctx.log("  ℹ Chưa set tọa độ nút [Vào kênh] — bỏ qua (có thể double-click kênh vào luôn).");
+        }
     }
 
     // ================================================================

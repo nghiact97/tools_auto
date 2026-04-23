@@ -113,7 +113,7 @@ public class LoginScreenHandler implements ScreenHandler {
 
     /**
      * Polling kiểm tra game client process đã chạy chưa.
-     * Tìm process "crossfire.exe" hoặc "cf.exe".
+     * Tìm process dựa theo tên exe trong profile + các tên phổ biến của Crossfire.
      */
     private boolean waitForGameProcess(BotContext ctx) throws InterruptedException {
         long timeoutMs = 60000;
@@ -141,8 +141,11 @@ public class LoginScreenHandler implements ScreenHandler {
 
     /**
      * Kiểm tra game client (Crossfire) đã chạy chưa.
+     * Tìm process crossfire.exe — đây là game client thực sự
+     * (patcher_cf2.exe chỉ là launcher, sẽ thoát sau khi spawn game).
      */
     private boolean isGameClientRunning(BotContext ctx) {
+        // Tìm game client thực sự
         return ctx.isProcessRunning("crossfire.exe")
             || ctx.isProcessRunning("cf.exe");
     }
@@ -152,17 +155,22 @@ public class LoginScreenHandler implements ScreenHandler {
     // ================================================================
 
     /**
-     * Focus cửa sổ game trước khi nhập credentials.
-     * Đảm bảo input được gửi đúng cửa sổ.
+     * Click vào vùng game window để đảm bảo focus đúng cửa sổ.
      */
     private void focusGame(BotContext ctx) throws InterruptedException {
-        ctx.log("  → Focus cửa sổ game...");
-        ctx.focusGameWindow();
-        ctx.sleep(300);
+        GameProfile profile = ctx.getProfile();
+        // Click vào vùng giữa game window để focus
+        int clickX = profile.getUsernameX();
+        int clickY = profile.getUsernameY() - 50; // phía trên ô username
+        if (clickX > 0 && clickY > 0) {
+            RobotActions.click(clickX, clickY);
+            ctx.sleep(300);
+        }
     }
 
     /**
      * Click ô Username → Select All → Paste username.
+     * Giữ logic đơn giản: click → CTRL+A → paste.
      */
     private void enterUsername(BotContext ctx) throws InterruptedException {
         GameProfile profile = ctx.getProfile();
@@ -174,15 +182,7 @@ public class LoginScreenHandler implements ScreenHandler {
         ctx.log("  → Click ô Username (" + x + ", " + y + ")");
         RobotActions.click(x, y);
         ctx.sleep(profile.getStepDelayMs() / 2);
-
-        // Triple-click để select all text trong ô (chắc chắn hơn CTRL+A)
-        RobotActions.click(x, y);
-        ctx.sleep(50);
-        RobotActions.click(x, y);
-        ctx.sleep(100);
-
-        // CTRL+A → xóa sạch → paste
-        RobotActions.selectAll();
+        RobotActions.selectAll();  // CTRL+A
         ctx.sleep(200);
         ctx.typeViaSysClipboard(profile.getUsername());
         ctx.sleep(profile.getStepDelayMs());
@@ -190,6 +190,7 @@ public class LoginScreenHandler implements ScreenHandler {
 
     /**
      * Click ô Password → Select All → Paste password (đã decrypt).
+     * Giữ logic đơn giản: click → CTRL+A → paste.
      */
     private void enterPassword(BotContext ctx) throws InterruptedException {
         GameProfile profile = ctx.getProfile();
@@ -203,14 +204,7 @@ public class LoginScreenHandler implements ScreenHandler {
         ctx.log("  → Click ô Password (" + x + ", " + y + ")");
         RobotActions.click(x, y);
         ctx.sleep(profile.getStepDelayMs() / 2);
-
-        // Triple-click select all
-        RobotActions.click(x, y);
-        ctx.sleep(50);
-        RobotActions.click(x, y);
-        ctx.sleep(100);
-
-        RobotActions.selectAll();
+        RobotActions.selectAll();  // CTRL+A
         ctx.sleep(200);
         ctx.typeViaSysClipboard(password);
         ctx.sleep(profile.getStepDelayMs());

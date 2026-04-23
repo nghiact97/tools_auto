@@ -106,6 +106,7 @@ public class MainController implements Initializable {
     @FXML private TextField fieldUsername;
     @FXML private PasswordField fieldPassword;
     @FXML private ComboBox<String> comboChannel;
+    @FXML private ComboBox<String> comboChannelNumber;
     @FXML private TextField fieldUsernameX, fieldUsernameY;
     @FXML private TextField fieldPasswordX, fieldPasswordY;
     @FXML private TextField fieldLoginBtnX, fieldLoginBtnY;
@@ -152,7 +153,7 @@ public class MainController implements Initializable {
         gameBotController = new GameBotController();
         gameBotController.injectFields(
             comboProfiles, fieldProfileName, fieldGameName, fieldExePath,
-            fieldUsername, fieldPassword, comboChannel,
+            fieldUsername, fieldPassword, comboChannel, comboChannelNumber,
             fieldUsernameX, fieldUsernameY,
             fieldPasswordX, fieldPasswordY,
             fieldLoginBtnX, fieldLoginBtnY,
