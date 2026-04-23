@@ -40,21 +40,51 @@ public class GameProfile {
     private boolean autoReconnect = false; // tự động re-login khi disconnect
     private boolean runAsAdmin    = false; // mở game bằng quyền Admin
 
+    // ========== LOGIN RETRY ==========
+    private int loginRetryCount    = 3;     // số lần retry đăng nhập
+    private long loginRetryDelayMs = 3000;  // chờ giữa mỗi lần retry (ms)
+
     // ========== DEFAULT VALUES (Crossfire) ==========
     private static final int DEF_USERNAME_X = 1163, DEF_USERNAME_Y = 735;
     private static final int DEF_PASSWORD_X = 1152, DEF_PASSWORD_Y = 768;
     private static final int DEF_LOGINBTN_X = 1376, DEF_LOGINBTN_Y = 764;
     private static final int DEF_ENTERGAME_X = 960, DEF_ENTERGAME_Y = 205;
 
+    // Tọa độ nút "Chọn kênh" trên home screen
+    private int channelBtnX = 0, channelBtnY = 0;
+    private static final int DEF_CHANNELBTN_X = 680, DEF_CHANNELBTN_Y = 168;
+
     /**
      * Áp dụng tọa độ mặc định cho các field = 0.
      * Gọi sau khi Gson deserialize từ JSON để fill giá trị thiếu.
      */
     public void applyDefaults() {
-        if (usernameX  == 0 && usernameY  == 0) { usernameX  = DEF_USERNAME_X;  usernameY  = DEF_USERNAME_Y; }
-        if (passwordX  == 0 && passwordY  == 0) { passwordX  = DEF_PASSWORD_X;  passwordY  = DEF_PASSWORD_Y; }
-        if (loginBtnX  == 0 && loginBtnY  == 0) { loginBtnX  = DEF_LOGINBTN_X;  loginBtnY  = DEF_LOGINBTN_Y; }
-        if (enterGameX == 0 && enterGameY == 0) { enterGameX = DEF_ENTERGAME_X; enterGameY = DEF_ENTERGAME_Y; }
+        if (usernameX   == 0 && usernameY   == 0) { usernameX   = DEF_USERNAME_X;   usernameY   = DEF_USERNAME_Y; }
+        if (passwordX   == 0 && passwordY   == 0) { passwordX   = DEF_PASSWORD_X;   passwordY   = DEF_PASSWORD_Y; }
+        if (loginBtnX   == 0 && loginBtnY   == 0) { loginBtnX   = DEF_LOGINBTN_X;   loginBtnY   = DEF_LOGINBTN_Y; }
+        if (enterGameX  == 0 && enterGameY  == 0) { enterGameX  = DEF_ENTERGAME_X;  enterGameY  = DEF_ENTERGAME_Y; }
+        if (channelBtnX == 0 && channelBtnY == 0) { channelBtnX = DEF_CHANNELBTN_X; channelBtnY = DEF_CHANNELBTN_Y; }
+        if (serverName == null || serverName.isEmpty()) serverName = "Tân Binh";
+    }
+
+    public int getChannelBtnX() { return channelBtnX; }
+    public int getChannelBtnY() { return channelBtnY; }
+    public void setChannelBtnCoords(int x, int y) { channelBtnX = x; channelBtnY = y; }
+
+    /**
+     * Trả về tọa độ (x, y) của kênh dựa theo tên.
+     * Layout Crossfire: 2 cột, mỗi cột có danh sách server.
+     */
+    public int[] getChannelCoords(String channelName) {
+        if (channelName == null) return new int[]{0, 0};
+        switch (channelName.trim()) {
+            case "Tân Binh":  return new int[]{895, 260};
+            case "Tự do 1":  return new int[]{1130, 260};
+            case "Tự do 2":  return new int[]{895, 280};
+            case "Tự do 3":  return new int[]{1130, 280};
+            case "Tự do 4":  return new int[]{895, 300};
+            default:          return new int[]{895, 260}; // mặc định Tân Binh
+        }
     }
 
     // ========== GETTERS / SETTERS ==========
@@ -125,6 +155,12 @@ public class GameProfile {
 
     public boolean isRunAsAdmin()   { return runAsAdmin; }
     public void setRunAsAdmin(boolean v) { runAsAdmin = v; }
+
+    public int getLoginRetryCount()      { return loginRetryCount; }
+    public void setLoginRetryCount(int v) { loginRetryCount = v; }
+
+    public long getLoginRetryDelayMs()   { return loginRetryDelayMs; }
+    public void setLoginRetryDelayMs(long v) { loginRetryDelayMs = v; }
 
     @Override
     public String toString() { return profileName; }

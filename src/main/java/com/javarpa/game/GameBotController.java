@@ -2,7 +2,6 @@ package com.javarpa.game;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.javarpa.core.PixelDetector;
 import com.javarpa.util.CryptoUtil;
 import javafx.application.Platform;
@@ -29,7 +28,7 @@ public class GameBotController {
     private TextField fieldProfileName, fieldGameName, fieldExePath;
     private TextField fieldUsername;
     private PasswordField fieldPassword;
-    private TextField fieldServerName;
+    private ComboBox<String> comboChannel;   // ComboBox chọn channel (thay TextField)
     private TextField fieldUsernameX, fieldUsernameY;
     private TextField fieldPasswordX, fieldPasswordY;
     private TextField fieldLoginBtnX, fieldLoginBtnY;
@@ -54,15 +53,21 @@ public class GameBotController {
         System.getProperty("user.home"), ".javarpa", "game_profiles.json"
     );
 
+    // ===== CHANNEL LIST (Crossfire) =====
+    private static final String[] CHANNELS = {
+        "Tân Binh", "Tự do 1", "Tự do 2", "Tự do 3", "Tự do 4"
+    };
+
     // ===== INJECTION =====
 
     /**
      * Được gọi bởi MainController để inject tất cả FXML controls.
+     * Nhận ComboBox<String> cho channel thay vì TextField.
      */
     public void injectFields(
             ComboBox<GameProfile> comboProfiles,
             TextField fieldProfileName, TextField fieldGameName, TextField fieldExePath,
-            TextField fieldUsername, PasswordField fieldPassword, TextField fieldServerName,
+            TextField fieldUsername, PasswordField fieldPassword, ComboBox<String> comboChannel,
             TextField fieldUsernameX, TextField fieldUsernameY,
             TextField fieldPasswordX, TextField fieldPasswordY,
             TextField fieldLoginBtnX, TextField fieldLoginBtnY,
@@ -81,7 +86,7 @@ public class GameBotController {
         this.fieldExePath      = fieldExePath;
         this.fieldUsername     = fieldUsername;
         this.fieldPassword     = fieldPassword;
-        this.fieldServerName   = fieldServerName;
+        this.comboChannel      = comboChannel;
         this.fieldUsernameX    = fieldUsernameX;
         this.fieldUsernameY    = fieldUsernameY;
         this.fieldPasswordX    = fieldPasswordX;
@@ -120,6 +125,12 @@ public class GameBotController {
             GameProfile sel = comboProfiles.getValue();
             if (sel != null) fillForm(sel);
         });
+
+        // Setup channel ComboBox
+        if (comboChannel != null) {
+            comboChannel.getItems().addAll(CHANNELS);
+            comboChannel.setValue(CHANNELS[0]); // mặc định "Tân Binh"
+        }
 
         spinnerStepDelay.setValueFactory(
             new SpinnerValueFactory.IntegerSpinnerValueFactory(100, 10000, 800, 100));
@@ -312,7 +323,11 @@ public class GameBotController {
             p.setPasswordEnc(CryptoUtil.encrypt(rawPw));
         }
 
-        p.setServerName(fieldServerName.getText().trim());
+        // Đọc channel từ ComboBox
+        if (comboChannel != null && comboChannel.getValue() != null) {
+            p.setServerName(comboChannel.getValue());
+        }
+
         p.setUsernameCoords(intOf(fieldUsernameX),  intOf(fieldUsernameY));
         p.setPasswordCoords(intOf(fieldPasswordX),  intOf(fieldPasswordY));
         p.setLoginBtnCoords(intOf(fieldLoginBtnX),  intOf(fieldLoginBtnY));
@@ -335,7 +350,15 @@ public class GameBotController {
         fieldExePath.setText(p.getExePath());
         fieldUsername.setText(p.getUsername());
         fieldPassword.setText(""); // không hiện password đã encrypt
-        fieldServerName.setText(p.getServerName());
+
+        // Set channel ComboBox
+        if (comboChannel != null) {
+            String serverName = p.getServerName();
+            if (serverName != null && !serverName.isEmpty()) {
+                comboChannel.setValue(serverName);
+            }
+        }
+
         fieldUsernameX.setText(str(p.getUsernameX()));
         fieldUsernameY.setText(str(p.getUsernameY()));
         fieldPasswordX.setText(str(p.getPasswordX()));

@@ -248,8 +248,9 @@
                                 <Label text="Mật khẩu:" styleClass="label-muted"/>
                                 <PasswordField fx:id="fieldPassword" promptText="••••••••" styleClass="text-field-dark"/>
 
-                                <Label text="Server:" styleClass="label-muted"/>
-                                <TextField fx:id="fieldServerName" promptText="VD: 1 hoặc Asia" styleClass="text-field-dark"/>
+                                <Label text="Kênh:" styleClass="label-muted"/>
+                                <ComboBox fx:id="comboChannel" maxWidth="Infinity" styleClass="combo-dark"
+                                          promptText="-- Chọn kênh --"/>
                             </VBox>
 
                             <!-- Save button -->
