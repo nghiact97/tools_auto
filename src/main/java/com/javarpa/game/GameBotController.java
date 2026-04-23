@@ -3,6 +3,7 @@ package com.javarpa.game;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.javarpa.core.PixelDetector;
+import com.javarpa.game.handler.ScreenMatcher;
 import com.javarpa.util.CryptoUtil;
 import javafx.application.Platform;
 import javafx.scene.control.*;
@@ -208,6 +209,45 @@ public class GameBotController {
     public void onPickEnterGame()   { pickCoord(fieldEnterGameX, fieldEnterGameY, "Enter Game button"); }
     public void onPickLoginDetect() { pickCoordWithColor(fieldLoginDetectX, fieldLoginDetectY, fieldLoginDetectHex, "Login detect pixel"); }
     public void onPickServerDetect(){ pickCoordWithColor(fieldServerDetectX, fieldServerDetectY, fieldServerDetectHex, "Server detect pixel"); }
+
+    /**
+     * Chụp ảnh mẫu vùng login screen (xung quanh nút Đăng Nhập).
+     * Dùng cho template matching detection — chính xác hơn pixel detect.
+     */
+    public void onCaptureLoginRef() {
+        int btnX = intOf(fieldLoginBtnX);
+        int btnY = intOf(fieldLoginBtnY);
+
+        if (btnX <= 0 || btnY <= 0) {
+            appendLog("❌ Chưa có tọa độ nút Đăng Nhập! Hãy bắt tọa độ trước.");
+            return;
+        }
+
+        appendLog("📸 Đang chụp mẫu login screen tại (" + btnX + ", " + btnY + ")...");
+        appendLog("   ⚠ Hãy đảm bảo game đang hiện MÀN HÌNH LOGIN!");
+
+        // Chờ 3 giây để user chuẩn bị
+        new Thread(() -> {
+            try {
+                for (int i = 3; i >= 1; i--) {
+                    int sec = i;
+                    Platform.runLater(() -> appendLog("   ⏳ Chụp sau " + sec + "s..."));
+                    Thread.sleep(1000);
+                }
+
+                boolean ok = ScreenMatcher.captureReference(btnX, btnY, "login_screen");
+                Platform.runLater(() -> {
+                    if (ok) {
+                        appendLog("   ✅ Đã lưu ảnh mẫu login screen!");
+                        appendLog("   📁 File: " + ScreenMatcher.getRefPathString("login_screen"));
+                        appendLog("   Bot sẽ dùng ảnh này để BIẾT CHÍNH XÁC login screen đã hiện chưa.");
+                    } else {
+                        appendLog("   ❌ Lỗi chụp ảnh mẫu!");
+                    }
+                });
+            } catch (InterruptedException ignored) {}
+        }, "Capture-Login-Ref").start();
+    }
 
     private void pickCoord(TextField xField, TextField yField, String label) {
         appendLog("📍 Hãy di chuột đến [" + label + "] trong 3 giây...");
@@ -417,7 +457,8 @@ public class GameBotController {
     private void loadProfiles() {
         try {
             if (!Files.exists(PROFILES_FILE)) return;
-            String json = new String(Files.readAllBytes(PROFILES_FILE));
+            // Fix: dùng UTF-8 rõ ràng để avoid tiếng Việt bị hỏng (T? do 2 bug)
+            String json = new String(Files.readAllBytes(PROFILES_FILE), java.nio.charset.StandardCharsets.UTF_8);
             Type listType = new com.google.gson.reflect.TypeToken<List<GameProfile>>(){}.getType();
             List<GameProfile> loaded = gson.fromJson(json, listType);
             if (loaded != null) {
@@ -432,7 +473,9 @@ public class GameBotController {
     private void saveProfiles() {
         try {
             Files.createDirectories(PROFILES_FILE.getParent());
-            Files.write(PROFILES_FILE, gson.toJson(profileList).getBytes());
+            // Fix: lưu với UTF-8 rõ ràng
+            Files.write(PROFILES_FILE,
+                gson.toJson(profileList).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         } catch (Exception e) {
             System.err.println("[GameBot] Save profiles failed: " + e.getMessage());
         }

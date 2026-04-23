@@ -116,6 +116,7 @@
 
             <!-- TAB: Macro -->
             <Tab text="🎙️ Macro" fx:id="tabMacro">
+                <ScrollPane fitToWidth="true" styleClass="scroll-dark">
                 <VBox spacing="12" styleClass="tab-content">
                     <HBox spacing="10" alignment="CENTER_LEFT">
                         <Button fx:id="btnMacroRecord" text="🔴 Bắt đầu ghi" styleClass="btn-record" onAction="#onMacroRecord" minWidth="140"/>
@@ -140,7 +141,7 @@
                         <Label fx:id="labelMacroCount" text="0 hành động" styleClass="label-muted"/>
                     </HBox>
 
-                    <ListView fx:id="listMacroActions" styleClass="list-view-dark" VBox.vgrow="ALWAYS"/>
+                    <ListView fx:id="listMacroActions" styleClass="list-view-dark" prefHeight="140"/>
 
                     <HBox spacing="8" alignment="CENTER_LEFT">
                         <Label text="Lặp lại:" styleClass="label-muted"/>
@@ -148,7 +149,79 @@
                                  editable="true" prefWidth="90" styleClass="spinner-dark"/>
                         <CheckBox fx:id="checkLoop" text="Vòng lặp vô tận" styleClass="check-dark"/>
                     </HBox>
+
+                    <!-- ============ COORDINATE PICKER PANEL ============ -->
+                    <VBox styleClass="card picker-card" spacing="10">
+
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="🎯 Game Coordinate Picker" styleClass="card-title picker-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="labelPickerStatus" text="Sẵn sàng" styleClass="picker-status"/>
+                        </HBox>
+                        <Label text="Di chuột lên nút/ô trong cửa sổ game, nhấn [Bắt tọa độ] để ghi lại (X, Y, màu pixel, nhãn). Sau đó gửi thẳng sang Game Bot." styleClass="label-muted" wrapText="true"/>
+
+                        <!-- Input row -->
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Label text="Tên nút:" styleClass="label-muted"/>
+                            <TextField fx:id="fieldPickerLabel" promptText="VD: Nút PLAY, Ô username, Nút Login..."
+                                       styleClass="text-field-dark" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="btnPickerCapture" text="🎯 Bắt tọa độ (3s)"
+                                    styleClass="btn-picker-capture" onAction="#onPickerCapture" minWidth="150"/>
+                            <Button fx:id="btnPickerContinuous" text="⚡ Liên tục (5s)"
+                                    styleClass="btn-picker-continuous" onAction="#onPickerCaptureContinuous" minWidth="130"/>
+                        </HBox>
+
+                        <!-- TableView -->
+                        <TableView fx:id="tableCoords" styleClass="table-coords"
+                                   minHeight="200" prefHeight="220" editable="false">
+                            <columns>
+                                <TableColumn fx:id="colIndex" text="#" prefWidth="36" minWidth="36" maxWidth="50" sortable="false"/>
+                                <TableColumn fx:id="colX" text="X" prefWidth="68" sortable="false"/>
+                                <TableColumn fx:id="colY" text="Y" prefWidth="68" sortable="false"/>
+                                <TableColumn fx:id="colColor" text="Màu Pixel" prefWidth="130" sortable="false"/>
+                                <TableColumn fx:id="colLabel" text="Tên / Nhãn nút" prefWidth="250" sortable="false"/>
+                                <TableColumn fx:id="colTime" text="Thời gian" prefWidth="80" sortable="false"/>
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                            </columnResizePolicy>
+                        </TableView>
+
+                        <!-- Bottom actions row -->
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+
+                            <!-- Preview màu của entry đang chọn -->
+                            <Label text="Pixel:" styleClass="label-muted"/>
+                            <Pane fx:id="paneSelectedColor" prefWidth="22" prefHeight="22"
+                                  styleClass="picker-color-preview"/>
+                            <Label fx:id="labelSelectedHex" text="#------" styleClass="label-mono"/>
+
+                            <Separator orientation="VERTICAL" styleClass="sep"/>
+
+                            <!-- Table management -->
+                            <Button fx:id="btnDeleteEntry" text="🗑 Xóa dòng"
+                                    styleClass="btn-mini" onAction="#onPickerDeleteEntry"/>
+                            <Button fx:id="btnClearAll" text="🧹 Xóa tất cả"
+                                    styleClass="btn-mini" onAction="#onPickerClearAll"/>
+                            <Button fx:id="btnCopyJson" text="📋 Copy JSON"
+                                    styleClass="btn-mini btn-copy-json" onAction="#onPickerCopyJson"/>
+
+                            <Region HBox.hgrow="ALWAYS"/>
+
+                            <!-- Send to Game Bot -->
+                            <Label text="Gửi →" styleClass="label-muted"/>
+                            <ComboBox fx:id="comboSendTarget" styleClass="combo-dark"
+                                      prefWidth="210"/>
+                            <Button fx:id="btnSendToBot" text="➡ Gửi sang Game Bot"
+                                    styleClass="btn-send-to-bot" onAction="#onPickerSendToBot" minWidth="160"/>
+                        </HBox>
+
+                    </VBox>
+                    <!-- ============ END COORDINATE PICKER PANEL ============ -->
+
                 </VBox>
+                </ScrollPane>
             </Tab>
 
             <!-- TAB: Settings -->
@@ -206,8 +279,8 @@
                 <ScrollPane fitToWidth="true" styleClass="scroll-dark">
                     <HBox spacing="12" styleClass="tab-content" alignment="TOP_LEFT">
 
-                        <!-- ======= CỘT TRÁI: Profile Setup ======= -->
-                        <VBox spacing="10" prefWidth="260" minWidth="240">
+                        <!-- ======= CỘT TRÁI: Profile Setup (compact) ======= -->
+                        <VBox spacing="10" prefWidth="250" minWidth="230" maxWidth="270">
 
                             <!-- Profile Selector -->
                             <VBox styleClass="card" spacing="8">
@@ -221,14 +294,11 @@
                             </VBox>
 
                             <!-- Game Info -->
-                            <VBox styleClass="card" spacing="8">
-                                <Label text="🎮 Thông Tin Game" styleClass="card-title"/>
+                            <VBox styleClass="card" spacing="6">
+                                <Label text="🎮 Game" styleClass="card-title"/>
 
                                 <Label text="Tên Profile:" styleClass="label-muted"/>
                                 <TextField fx:id="fieldProfileName" promptText="VD: CF Acc1" styleClass="text-field-dark"/>
-
-                                <Label text="Tên Game:" styleClass="label-muted"/>
-                                <TextField fx:id="fieldGameName" promptText="VD: CrossFire" styleClass="text-field-dark"/>
 
                                 <Label text="Đường dẫn .exe:" styleClass="label-muted"/>
                                 <HBox spacing="6">
@@ -236,10 +306,13 @@
                                                styleClass="text-field-dark" HBox.hgrow="ALWAYS"/>
                                     <Button text="📂" styleClass="btn-mini" onAction="#onBrowseExe"/>
                                 </HBox>
+
+                                <!-- Tên Game (ẩn label, dùng field nhỏ gọn) -->
+                                <TextField fx:id="fieldGameName" promptText="Tên game (VD: CrossFire)" styleClass="text-field-dark" visible="false" managed="false"/>
                             </VBox>
 
                             <!-- Account -->
-                            <VBox styleClass="card" spacing="8">
+                            <VBox styleClass="card" spacing="6">
                                 <Label text="🔑 Tài Khoản" styleClass="card-title"/>
 
                                 <Label text="Username:" styleClass="label-muted"/>
@@ -262,11 +335,11 @@
 
                         </VBox>
 
-                        <!-- ======= CỘT GIỮA: Coordinate Calibration ======= -->
-                        <VBox spacing="10" prefWidth="290" minWidth="270" HBox.hgrow="SOMETIMES">
+                        <!-- ======= CỘT GIỮA: Ẩn hoàn toàn (giữ FXML bindings) ======= -->
+                        <VBox spacing="10" visible="false" managed="false">
 
-                            <!-- UI Coordinates -->
-                            <VBox styleClass="card" spacing="8">
+                            <!-- UI Coordinates (ẩn — đã có tọa độ mặc định) -->
+                            <VBox styleClass="card" spacing="8" visible="false" managed="false">
                                 <Label text="📍 Toạ Độ UI (Click [Pick] sau đó di chuột vào vị trí cần bắt)" styleClass="card-title"/>
                                 <Label text="Sau 3 giây đếm ngược, toạ độ chuột sẽ tự động được lưu." styleClass="label-muted" wrapText="true"/>
 
@@ -316,8 +389,8 @@
                                 </GridPane>
                             </VBox>
 
-                            <!-- Pixel Detect -->
-                            <VBox styleClass="card" spacing="8">
+                            <!-- Pixel Detect (ẩn — auto-detect thay thế) -->
+                            <VBox styleClass="card" spacing="8" visible="false" managed="false">
                                 <Label text="🔍 Pixel Detect (Chờ màn hình xuất hiện)" styleClass="card-title"/>
                                 <Label text="Bot sẽ chờ đúng màu pixel tại toạ độ này trước khi tiến hành bước tiếp theo." styleClass="label-muted" wrapText="true"/>
 
@@ -349,10 +422,16 @@
                                     <TextField fx:id="fieldServerDetectHex" styleClass="text-field-dark" promptText="#FFFFFF" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
                                     <Button text="📍" styleClass="btn-mini pick-btn" onAction="#onPickServerDetect" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
                                 </GridPane>
+
+                                <!-- Template matching: chụp mẫu login screen -->
+                                <Label text="📸 Template Matching (chính xác nhất):" styleClass="label-muted" style="-fx-font-weight: bold;"/>
+                                <Label text="Mở game → đến màn hình login → nhấn nút dưới để chụp mẫu. Bot sẽ so sánh ảnh để biết chính xác login screen đã hiện chưa." styleClass="label-muted" wrapText="true" style="-fx-font-size: 10;"/>
+                                <Button text="📸 Chụp mẫu Login Screen" styleClass="btn-activate"
+                                        onAction="#onCaptureLoginRef" maxWidth="Infinity"/>
                             </VBox>
 
-                            <!-- Bot settings -->
-                            <VBox styleClass="card" spacing="8">
+                            <!-- Bot settings (ẩn — dùng giá trị mặc định) -->
+                            <VBox styleClass="card" spacing="8" visible="false" managed="false">
                                 <Label text="⚙️ Cài Đặt Bot" styleClass="card-title"/>
                                 <GridPane hgap="12" vgap="8">
                                     <Label text="Delay mỗi bước (ms):" styleClass="label-muted" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
@@ -373,12 +452,17 @@
 
                         </VBox>
 
-                        <!-- ======= CỘT PHẢI: Bot Control + Log ======= -->
+                        <!-- ======= CỘT PHẢI: Bot Control + Log (ưu tiên) ======= -->
                         <VBox spacing="10" HBox.hgrow="ALWAYS">
 
-                            <!-- Control -->
-                            <VBox styleClass="card" spacing="10">
-                                <Label text="🚀 Điều Khiển Bot" styleClass="card-title"/>
+                            <!-- Control — compact -->
+                            <VBox styleClass="card" spacing="8">
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label text="🚀 Bot" styleClass="card-title"/>
+                                    <Region HBox.hgrow="ALWAYS"/>
+                                    <Label text="Trạng thái:" styleClass="label-muted"/>
+                                    <Label fx:id="labelBotState" text="⏸ Chờ" styleClass="label-value"/>
+                                </HBox>
 
                                 <HBox spacing="8" alignment="CENTER">
                                     <Button fx:id="btnStartBot" text="▶ Bắt đầu Bot" styleClass="btn-run"
@@ -388,30 +472,15 @@
                                     <Button fx:id="btnStopBot" text="⏹ Dừng Bot" styleClass="btn-stop"
                                             onAction="#onStopBot" minWidth="110" disable="true"/>
                                 </HBox>
-
-                                <HBox spacing="8" alignment="CENTER_LEFT">
-                                    <Label text="Trạng thái:" styleClass="label-muted"/>
-                                    <Label fx:id="labelBotState" text="⏸ Chờ" styleClass="label-value"/>
-                                </HBox>
                             </VBox>
 
-                            <!-- Hướng dẫn nhanh -->
-                            <VBox styleClass="card" spacing="6">
-                                <Label text="📖 Hướng Dẫn Nhanh" styleClass="card-title"/>
-                                <Label text="1. Nhập thông tin tài khoản ở cột trái" styleClass="label-muted" wrapText="true"/>
-                                <Label text="2. Click [📍 Pick] để bắt tọa độ từng ô (di chuột vào đúng vị trí trong 3 giây)" styleClass="label-muted" wrapText="true"/>
-                                <Label text="3. (Tuỳ chọn) Bắt pixel detect để bot chờ màn hình load xong" styleClass="label-muted" wrapText="true"/>
-                                <Label text="4. Lưu profile rồi nhấn [▶ Bắt đầu Bot]" styleClass="label-muted" wrapText="true"/>
-                                <Label text="5. Bot sẽ tự động: Mở game → Đăng nhập → Chọn server → Vào game" styleClass="label-muted" wrapText="true"/>
-                            </VBox>
-
-                            <!-- Log -->
+                            <!-- Log — chiếm toàn bộ không gian còn lại -->
                             <VBox styleClass="card" spacing="8" VBox.vgrow="ALWAYS">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label text="📄 Log Bot" styleClass="card-title" HBox.hgrow="ALWAYS"/>
                                     <Button text="🗑 Xóa log" styleClass="btn-mini" onAction="#onClearLog"/>
                                 </HBox>
-                                <TextArea fx:id="textBotLog" editable="false" prefRowCount="20"
+                                <TextArea fx:id="textBotLog" editable="false" prefRowCount="30"
                                           wrapText="true" styleClass="text-area-dark" VBox.vgrow="ALWAYS"
                                           style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 11;"/>
                             </VBox>

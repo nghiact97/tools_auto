@@ -30,7 +30,7 @@ public class GameBot {
 
     public enum State {
         IDLE, LAUNCHING, WAITING_LOGIN, LOGGING_IN,
-        WAITING_SERVER, SELECTING_SERVER, ENTERING_GAME,
+        WAITING_SERVER, SELECTING_SERVER, CREATING_ROOM, ENTERING_GAME,
         RUNNING, ERROR, STOPPED
     }
 
@@ -203,7 +203,12 @@ public class GameBot {
         log("📋 Tọa độ: PLAY(" + profile.getEnterGameX() + "," + profile.getEnterGameY()
             + ") User(" + profile.getUsernameX() + "," + profile.getUsernameY()
             + ") Pass(" + profile.getPasswordX() + "," + profile.getPasswordY()
-            + ") Login(" + profile.getLoginBtnX() + "," + profile.getLoginBtnY()
-            + ") Server(" + profile.getServerX() + "," + profile.getServerY() + ")");
+            + ") Login(" + profile.getLoginBtnX() + "," + profile.getLoginBtnY() + ")");
+        log("📋 Close(" + profile.getCloseNotifyX() + "," + profile.getCloseNotifyY()
+            + ") SysOK(" + profile.getSysConfirmX() + "," + profile.getSysConfirmY()
+            + ") Room(" + profile.getCreateRoomX() + "," + profile.getCreateRoomY()
+            + ") AI(" + profile.getAiModeX() + "," + profile.getAiModeY()
+            + ") Confirm(" + profile.getConfirmX() + "," + profile.getConfirmY()
+            + ") Start(" + profile.getStartGameX() + "," + profile.getStartGameY() + ")");
     }
 }

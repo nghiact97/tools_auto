@@ -546,3 +546,198 @@
     -fx-background-color: #1158c7;
 }
 
+/* =========== TABLE VIEW (Coordinate Picker) =========== */
+
+.table-coords {
+    -fx-background-color: #0d1117;
+    -fx-border-color: #30363d;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+}
+
+.table-coords .column-header-background {
+    -fx-background-color: #161b22;
+    -fx-border-color: transparent transparent #30363d transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-coords .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent #30363d transparent transparent;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 8 10 8 10;
+}
+
+.table-coords .column-header .label {
+    -fx-text-fill: #8b949e;
+    -fx-font-size: 11px;
+    -fx-font-weight: 600;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.table-coords .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #1c2128 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-coords .table-row-cell:hover {
+    -fx-background-color: #1c2128;
+}
+
+.table-coords .table-row-cell:selected {
+    -fx-background-color: rgba(56, 139, 253, 0.12);
+}
+
+.table-coords .table-cell {
+    -fx-text-fill: #e6edf3;
+    -fx-font-family: "JetBrains Mono", "Courier New", monospace;
+    -fx-font-size: 11px;
+    -fx-padding: 6 10 6 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent;
+}
+
+.table-coords .table-row-cell:selected .table-cell {
+    -fx-text-fill: #58a6ff;
+}
+
+/* Cột index — center align + muted */
+.table-coords #colIndex .table-cell,
+.table-coords .table-cell:first-child {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #6e7681;
+}
+
+/* Scroll bar trong table */
+.table-coords .scroll-bar {
+    -fx-background-color: #161b22;
+}
+.table-coords .scroll-bar .thumb {
+    -fx-background-color: #30363d;
+    -fx-background-radius: 4;
+}
+
+/* Placeholder text */
+.table-coords .label {
+    -fx-text-fill: #484f58;
+    -fx-font-size: 12px;
+}
+
+/* =========== COORDINATE PICKER CARD =========== */
+
+.picker-card {
+    -fx-border-color: #1f3a5a;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 253, 0.12), 12, 0, 0, 2);
+}
+
+.picker-title {
+    -fx-text-fill: #58a6ff;
+}
+
+.picker-status {
+    -fx-font-family: "JetBrains Mono", "Courier New", monospace;
+    -fx-font-size: 12px;
+    -fx-text-fill: #6e7681;
+    -fx-padding: 3 10 3 10;
+    -fx-background-color: #0d1117;
+    -fx-background-radius: 4;
+    -fx-border-color: #30363d;
+    -fx-border-radius: 4;
+    -fx-border-width: 1;
+}
+
+.picker-color-preview {
+    -fx-border-color: #30363d;
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-background-color: #21262d;
+}
+
+/* ===== Nút Bắt tọa độ (3s) ===== */
+.btn-picker-capture {
+    -fx-background-color: linear-gradient(to bottom, #1a4a7a, #0f3357);
+    -fx-text-fill: #58a6ff;
+    -fx-border-color: #388bfd;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 8 14 8 14;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 253, 0.35), 8, 0, 0, 2);
+}
+
+.btn-picker-capture:hover {
+    -fx-background-color: linear-gradient(to bottom, #388bfd, #1f6feb);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(56, 139, 253, 0.6), 14, 0, 0, 3);
+}
+
+.btn-picker-capture:pressed {
+    -fx-background-color: #0f3357;
+}
+
+/* ===== Nút Bắt liên tục (5s) ===== */
+.btn-picker-continuous {
+    -fx-background-color: linear-gradient(to bottom, #2d4a1e, #1e3214);
+    -fx-text-fill: #56d364;
+    -fx-border-color: #3fb950;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 8 14 8 14;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(63, 185, 80, 0.25), 8, 0, 0, 2);
+}
+
+.btn-picker-continuous:hover {
+    -fx-background-color: linear-gradient(to bottom, #3fb950, #2ea043);
+    -fx-text-fill: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(63, 185, 80, 0.5), 12, 0, 0, 2);
+}
+
+.btn-picker-continuous:pressed {
+    -fx-background-color: #1e3214;
+}
+
+/* ===== Nút Copy JSON ===== */
+.btn-copy-json {
+    -fx-text-fill: #d29922;
+    -fx-border-color: #6e4c13;
+}
+
+.btn-copy-json:hover {
+    -fx-background-color: #2d2008;
+    -fx-border-color: #d29922;
+    -fx-text-fill: #d29922;
+}
+
+/* ===== Nút Gửi sang Game Bot ===== */
+.btn-send-to-bot {
+    -fx-background-color: linear-gradient(to bottom, #6e1b7d, #571560);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #a371f7;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-width: 1;
+    -fx-padding: 8 16 8 16;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(163, 113, 247, 0.35), 8, 0, 0, 2);
+}
+
+.btn-send-to-bot:hover {
+    -fx-background-color: linear-gradient(to bottom, #a371f7, #6e1b7d);
+    -fx-effect: dropshadow(gaussian, rgba(163, 113, 247, 0.6), 14, 0, 0, 3);
+}
+
+.btn-send-to-bot:pressed {
+    -fx-background-color: #3d0d48;
+}

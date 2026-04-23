@@ -41,6 +41,8 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.13")
     // SLF4J API
     implementation("org.slf4j:slf4j-api:2.0.13")
+    // OpenCV — template matching (locateOnScreen giống PyAutoGUI)
+    implementation("org.openpnp:opencv:4.9.0-0")
 }
 
 tasks.shadowJar {

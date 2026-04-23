@@ -6,6 +6,8 @@ import com.javarpa.core.PixelDetector;
 import com.javarpa.core.ScreenCapture;
 import com.javarpa.game.GameBotController;
 import com.javarpa.license.LicenseManager;
+import com.javarpa.macro.CoordinateEntry;
+import com.javarpa.macro.CoordPickerController;
 import com.javarpa.macro.MacroPlayer;
 import com.javarpa.macro.MacroRecorder;
 import com.javarpa.macro.MacroScript;
@@ -24,6 +26,8 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.Spinner;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
@@ -87,6 +91,26 @@ public class MainController implements Initializable {
     @FXML private Spinner<Integer> spinnerRepeat;
     @FXML private CheckBox checkLoop;
 
+    // === FXML Bindings: Coordinate Picker ===
+    @FXML private TextField fieldPickerLabel;
+    @FXML private Button btnPickerCapture;
+    @FXML private Button btnPickerContinuous;
+    @FXML private Label labelPickerStatus;
+    @FXML private TableView<CoordinateEntry> tableCoords;
+    @FXML private TableColumn<CoordinateEntry, String> colIndex;
+    @FXML private TableColumn<CoordinateEntry, String> colX;
+    @FXML private TableColumn<CoordinateEntry, String> colY;
+    @FXML private TableColumn<CoordinateEntry, String> colColor;
+    @FXML private TableColumn<CoordinateEntry, String> colLabel;
+    @FXML private TableColumn<CoordinateEntry, String> colTime;
+    @FXML private Pane paneSelectedColor;
+    @FXML private Label labelSelectedHex;
+    @FXML private ComboBox<String> comboSendTarget;
+    @FXML private Button btnSendToBot;
+    @FXML private Button btnCopyJson;
+    @FXML private Button btnDeleteEntry;
+    @FXML private Button btnClearAll;
+
     // === FXML Bindings: Settings ===
     @FXML private ComboBox<String> comboHotkeyRun;
     @FXML private ComboBox<String> comboHotkeyRecord;
@@ -130,6 +154,7 @@ public class MainController implements Initializable {
     private MacroScript currentMacro = null;
     private boolean taskRunning = false;
     private GameBotController gameBotController;
+    private final CoordPickerController coordPickerController = new CoordPickerController();
 
     // === Timers ===
     private Timer uiTimer;
@@ -144,6 +169,7 @@ public class MainController implements Initializable {
         setupMacroTab();
         setupSettingsTab();
         setupGameBotTab();
+        setupCoordPicker(); // Phải gọi SAU setupGameBotTab để có field refs
         checkLicenseStatus();
         log("JavaRPA Tool đã khởi động.");
     }
@@ -167,6 +193,28 @@ public class MainController implements Initializable {
             labelBotState, textBotLog
         );
         gameBotController.initialize();
+    }
+
+    /** Wire CoordPickerController với tất cả controls cần thiết. */
+    private void setupCoordPicker() {
+        coordPickerController.inject(
+            fieldPickerLabel, btnPickerCapture, btnPickerContinuous, labelPickerStatus,
+            tableCoords, colIndex, colX, colY, colColor, colLabel, colTime,
+            paneSelectedColor, labelSelectedHex,
+            comboSendTarget, btnSendToBot, btnCopyJson, btnDeleteEntry, btnClearAll,
+            msg -> log(msg)
+        );
+        // Inject tham chiếu đến các TextField Game Bot để "Gửi sang Game Bot" hoạt động
+        coordPickerController.injectGameBotFields(
+            fieldUsernameX, fieldUsernameY,
+            fieldPasswordX, fieldPasswordY,
+            fieldLoginBtnX, fieldLoginBtnY,
+            fieldServerX,   fieldServerY,
+            fieldEnterGameX, fieldEnterGameY,
+            fieldLoginDetectX, fieldLoginDetectY, fieldLoginDetectHex,
+            fieldServerDetectX, fieldServerDetectY, fieldServerDetectHex
+        );
+        coordPickerController.initialize();
     }
 
     // =============================================
@@ -499,10 +547,24 @@ public class MainController implements Initializable {
     @FXML private void onPickEnterGame()  { if (gameBotController != null) gameBotController.onPickEnterGame(); }
     @FXML private void onPickLoginDetect(){ if (gameBotController != null) gameBotController.onPickLoginDetect(); }
     @FXML private void onPickServerDetect(){ if (gameBotController != null) gameBotController.onPickServerDetect(); }
+    @FXML private void onCaptureLoginRef(){ if (gameBotController != null) gameBotController.onCaptureLoginRef(); }
     @FXML private void onStartBot()       { if (gameBotController != null) gameBotController.onStartBot(); }
     @FXML private void onStopBot()        { if (gameBotController != null) gameBotController.onStopBot(); }
     @FXML private void onPauseBot()       { if (gameBotController != null) gameBotController.onPauseBot(); }
     @FXML private void onClearLog()       { if (gameBotController != null) gameBotController.onClearLog(); }
+
+
+
+    // =============================================
+    // COORDINATE PICKER ACTIONS (delegate to CoordPickerController)
+    // =============================================
+
+    @FXML private void onPickerCapture()           { coordPickerController.onCapture(); }
+    @FXML private void onPickerCaptureContinuous() { coordPickerController.onCaptureContinuous(); }
+    @FXML private void onPickerSendToBot()         { coordPickerController.onSendToBot(); }
+    @FXML private void onPickerCopyJson()          { coordPickerController.onCopyJson(); }
+    @FXML private void onPickerDeleteEntry()        { coordPickerController.onDeleteEntry(); }
+    @FXML private void onPickerClearAll()           { coordPickerController.onClearAll(); }
 
 
 
